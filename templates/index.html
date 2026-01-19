@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>高度しりとり 2026 Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        input, select, button { font-size: 16px !important; }
+        .spin { border-top-color: transparent; border-radius: 50%; width: 1.2rem; height: 1.2rem; border: 2px solid white; animation: spin 0.6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 pb-12">
+    <div class="max-w-md mx-auto p-4 space-y-4">
+        <header class="text-center py-6">
+            <h1 class="text-2xl font-black text-blue-600 tracking-tighter italic">SHIRITORI ENGINE 2026</h1>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Advanced Route Search</p>
+        </header>
+
+        <section class="bg-white rounded-3xl shadow-2xl p-6 space-y-5 border border-slate-100">
+            <div>
+                <label class="text-[11px] font-bold text-slate-400 ml-1 uppercase">Starting Word</label>
+                <input type="text" id="startWord" placeholder="例: アメリカ" class="w-full p-4 bg-slate-50 rounded-2xl border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 ml-1">探索モード</label>
+                    <select id="mode" class="w-full p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none font-medium">
+                        <option value="normal">通常一致</option>
+                        <option value="shift">ずらし(+1)</option>
+                        <option value="rev_shift">逆ずらし(-1)</option>
+                        <option value="gyoko">牛耕（交互）</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 ml-1">濁点/半濁点</label>
+                    <select id="diacritics" class="w-full p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none font-bold">
+                        <option value="true">カ=ガ(清音化)</option>
+                        <option value="false">カ≠ガ(厳密)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 ml-1">単語プール</label>
+                    <select id="category" class="w-full p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none">
+                        <option value="both">国名＋首都</option>
+                        <option value="country">国名のみ</option>
+                        <option value="capital">首都のみ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 ml-1">ルート長さ (2-12)</label>
+                    <input type="number" id="maxDepth" value="5" min="2" max="12" class="w-full p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none font-bold">
+                </div>
+            </div>
+
+            <button onclick="search()" id="searchBtn" class="flex justify-center items-center gap-2 w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">
+                <span>探索を開始する</span>
+            </button>
+        </section>
+
+        <div id="status" class="text-center text-xs font-bold text-slate-400 px-4"></div>
+        <div id="results" class="space-y-3"></div>
+    </div>
+
+    <script>
+        // iPhoneでの入力を考慮した自動カタカナ変換
+        document.getElementById('startWord').addEventListener('input', e => {
+            e.target.value = e.target.value.replace(/[ぁ-ん]/g, s => String.fromCharCode(s.charCodeAt(0) + 0x60));
+        });
+
+        async function search() {
+            const btn = document.getElementById('searchBtn');
+            const resArea = document.getElementById('results');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spin"></div><span>計算中...</span>';
+            resArea.innerHTML = '';
+            status.innerText = '390単語から最大10,000ルートを計算しています...';
+
+            const payload = {
+                start_word: document.getElementById('startWord').value,
+                category: document.getElementById('category').value,
+                mode: document.getElementById('mode').value,
+                ignore_diacritics: document.getElementById('diacritics').value === 'true',
+                max_depth: document.getElementById('maxDepth').value
+            };
+
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                status.innerText = `${data.results.length.toLocaleString()}件のルートを抽出しました`;
+                
+                data.results.slice(0, 500).forEach((route, i) => {
+                    const routeStr = route.join(' → ');
+                    const div = document.createElement('div');
+                    div.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-100 animate-in fade-in slide-in-from-bottom-2 duration-300';
+                    div.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] text-slate-300 font-bold uppercase tracking-widest">Route #${i+1}</span>
+                            <button onclick="copy('${routeStr}')" class="text-[10px] font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-lg hover:bg-blue-600 hover:text-white transition-colors">COPY</button>
+                        </div>
+                        <div class="text-sm font-bold text-slate-700 leading-relaxed">${routeStr}</div>
+                    `;
+                    resArea.appendChild(div);
+                });
+                if(data.results.length > 500) status.innerText += ' (表示は500件まで制限中)';
+            } catch (e) {
+                status.innerText = '探索中にエラーが発生しました';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>探索を開始する</span>';
+            }
+        }
+
+        function copy(text) {
+            navigator.clipboard.writeText(text);
+            const notice = document.createElement('div');
+            notice.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50';
+            notice.innerText = 'ルートをクリップボードにコピーしました';
+            document.body.appendChild(notice);
+            setTimeout(() => notice.remove(), 2000);
+        }
+    </script>
+</body>
+</html>
