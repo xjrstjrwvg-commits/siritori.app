@@ -3,50 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>高度しりとり 2026 Engine</title>
+    <title>高度しりとりEngine 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         input, select, button { font-size: 16px !important; }
         .word-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+        .btn-active:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="bg-slate-50 pb-20 text-slate-800">
-    <div class="max-w-2xl mx-auto p-4 space-y-6">
-        <header class="text-center py-4"><h1 class="text-2xl font-black text-blue-600 italic">SHIRITORI ENGINE 2026</h1></header>
+<body class="bg-slate-50 text-slate-800 pb-10">
+    <div class="max-w-2xl mx-auto p-4 space-y-4">
+        <header class="text-center py-2"><h1 class="text-2xl font-black text-blue-600 italic">SHIRITORI ENGINE 2026</h1></header>
 
-        <!-- 設定パネル -->
         <section class="bg-white rounded-3xl shadow-xl p-6 space-y-4 border border-slate-100">
             <div class="grid grid-cols-2 gap-4">
-                <div><label class="text-[10px] font-bold text-slate-400 uppercase">初めの文字</label><input type="text" id="startChar" class="w-full p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none"></div>
-                <div><label class="text-[10px] font-bold text-slate-400 uppercase">終わりの文字</label><input type="text" id="endChar" class="w-full p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none"></div>
+                <div><label class="text-[10px] font-bold text-slate-400 uppercase">初めの文字</label>
+                    <input type="text" id="startChar" class="kana-input w-full p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none" placeholder="あ"></div>
+                <div><label class="text-[10px] font-bold text-slate-400 uppercase">終わりの文字</label>
+                    <input type="text" id="endChar" class="kana-input w-full p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none" placeholder="ん"></div>
             </div>
-            <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase">ルート長さ (±範囲)</label>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-[10px] font-bold text-slate-400 uppercase">ずらし量 (ステップ)</label>
+                    <div class="flex items-center gap-2">
+                        <button onclick="adjStep(-1)" class="w-10 h-10 bg-slate-100 rounded-lg font-bold text-lg btn-active">−</button>
+                        <input type="text" id="shiftStep" value="0" readonly class="flex-grow p-2 bg-slate-50 rounded-lg text-center font-bold outline-none">
+                        <button onclick="adjStep(1)" class="w-10 h-10 bg-slate-100 rounded-lg font-bold text-lg btn-active">+</button>
+                    </div></div>
+                <div><label class="text-[10px] font-bold text-slate-400 uppercase">牛耕設定</label>
+                    <select id="gyokoOn" class="w-full p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none font-bold text-blue-600">
+                        <option value="false">牛耕オフ</option><option value="true">牛耕オン</option>
+                    </select></div>
+            </div>
+
+            <div><label class="text-[10px] font-bold text-slate-400 uppercase">ルートの長さ (±範囲)</label>
                 <div class="flex items-center gap-2">
-                    <button onclick="adj(-1)" class="w-12 h-12 bg-slate-100 rounded-xl font-bold text-xl active:bg-slate-200">−</button>
+                    <button onclick="adjDepth(-1)" class="w-12 h-12 bg-slate-100 rounded-xl font-bold text-xl btn-active">−</button>
                     <input type="number" id="baseDepth" value="5" readonly class="flex-grow p-3 bg-slate-50 rounded-xl text-center font-bold text-lg outline-none">
-                    <button onclick="adj(1)" class="w-12 h-12 bg-slate-100 rounded-xl font-bold text-xl active:bg-slate-200">+</button>
+                    <button onclick="adjDepth(1)" class="w-12 h-12 bg-slate-100 rounded-xl font-bold text-xl btn-active">+</button>
                     <select id="tol" class="w-20 p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 text-sm"><option value="0">±0</option><option value="1">±1</option><option value="2">±2</option></select>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <select id="mode" class="p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none font-medium"><option value="normal">通常</option><option value="shift">ずらし</option><option value="rev_shift">逆ずらし</option><option value="gyoko">牛耕</option></select>
-                <select id="dia" class="p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 outline-none font-bold"><option value="true">カ=ガ(清音)</option><option value="false">厳密一致</option></select>
-            </div>
+
             <div class="flex gap-2">
-                <button onclick="search()" id="sBtn" class="flex-grow py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-all">探索開始</button>
-                <button onclick="resetAll()" class="px-6 py-4 bg-red-50 text-red-500 rounded-2xl font-bold border border-red-100 active:scale-95 transition-all">初期化</button>
+                <button onclick="search()" id="sBtn" class="flex-grow py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg btn-active">探索開始</button>
+                <button onclick="location.reload()" class="px-6 py-4 bg-red-50 text-red-500 rounded-2xl font-bold border border-red-100 btn-active">初期化</button>
             </div>
         </section>
 
-        <!-- 単語リスト -->
         <section class="bg-white rounded-3xl shadow-lg p-6 space-y-4">
-            <h2 class="text-sm font-bold border-b pb-2">単語管理（必須/可/不可）</h2>
-            <div class="word-grid max-h-60 overflow-y-auto p-2 border rounded-xl">
+            <h2 class="text-xs font-bold border-b pb-2">単語管理（必須/可/不可）</h2>
+            <div class="word-grid max-h-60 overflow-y-auto p-2 border rounded-xl bg-slate-50">
                 {% for word in words %}
-                <div class="flex flex-col bg-slate-50 p-2 rounded-lg border border-slate-200">
+                <div class="flex flex-col bg-white p-2 rounded-lg border border-slate-100">
                     <span class="text-[10px] font-bold truncate mb-1">{{ word }}</span>
-                    <select class="w-status text-[10px] p-1 rounded border bg-white" data-word="{{ word }}"><option value="available">可</option><option value="must">必須</option><option value="disable">不可</option></select>
+                    <select class="w-status text-[9px] p-1 rounded border" data-word="{{ word }}"><option value="available">可</option><option value="must">必須</option><option value="disable">不可</option></select>
                 </div>
                 {% endfor %}
             </div>
@@ -56,23 +67,28 @@
     </div>
 
     <script>
-        function adj(v){let d=document.getElementById('baseDepth'); let n=parseInt(d.value)+v; if(n>=2&&n<=12)d.value=n;}
-        function resetAll(){ if(!confirm('すべての設定を初期化しますか？'))return; location.reload(); }
+        document.querySelectorAll('.kana-input').forEach(input => {
+            input.addEventListener('input', e => { e.target.value = e.target.value.replace(/[ぁ-ん]/g, s => String.fromCharCode(s.charCodeAt(0) + 0x60)); });
+        });
+        function adjDepth(v){let d=document.getElementById('baseDepth'); let n=parseInt(d.value)+v; if(n>=2&&n<=12)d.value=n;}
+        function adjStep(v){let s=document.getElementById('shiftStep'); let n=parseInt(s.value)+v; if(n>=-80&&n<=80){ s.value=(n>0?"+":"")+n; if(n===0)s.value="0";} }
+
         async function search() {
             const btn=document.getElementById('sBtn'); const res=document.getElementById('res'); const st=document.getElementById('st');
             const wordS={}; document.querySelectorAll('.w-status').forEach(s=>{if(s.value!=='available')wordS[s.dataset.word]=s.value;});
             btn.disabled=true; st.innerText='計算中...'; res.innerHTML='';
-            const pay={ start_char:document.getElementById('startChar').value, end_char:document.getElementById('endChar').value, base_depth:document.getElementById('baseDepth').value, tolerance:document.getElementById('tol').value, mode:document.getElementById('mode').value, word_settings:wordS, ignore_diacritics:document.getElementById('dia').value==='true' };
+            const b=parseInt(document.getElementById('baseDepth').value), t=parseInt(document.getElementById('tol').value);
+            const pay={ start_char:document.getElementById('startChar').value, end_char:document.getElementById('endChar').value, shift_step:parseInt(document.getElementById('shiftStep').value), gyoko_on:document.getElementById('gyokoOn').value==='true', word_settings:wordS, ignore_diacritics:true, min_depth:b-t, max_depth:b+t };
             try {
                 const r=await fetch('/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pay)});
-                const d=await r.json(); st.innerText=`${d.results.length}件発見`;
+                const d=await r.json(); st.innerText=`${d.results.length}件のルートを発見`;
                 d.results.slice(0,500).forEach((rt,i)=>{
                     const s=rt.join(' → '); const v=document.createElement('div');
-                    v.className='bg-white p-4 rounded-2xl shadow border border-slate-100 animate-in fade-in duration-300';
-                    v.innerHTML=`<div class="flex justify-between items-center mb-1"><span class="text-[10px] text-slate-300">#${i+1}</span><button onclick="navigator.clipboard.writeText('${s}');alert('コピーしました')" class="text-[9px] bg-slate-50 px-2 py-1 rounded">COPY</button></div><div class="text-xs font-bold">${s}</div>`;
+                    v.className='bg-white p-4 rounded-2xl shadow border border-slate-100';
+                    v.innerHTML=`<div class="flex justify-between items-center mb-1"><span class="text-[10px] text-slate-300">#${i+1}</span><button onclick="navigator.clipboard.writeText('${s}');alert('コピー成功')" class="text-[9px] bg-slate-50 px-2 py-1 rounded">COPY</button></div><div class="text-xs font-bold">${s}</div>`;
                     res.appendChild(v);
                 });
-            } catch(e){st.innerText='エラー発生';} finally{btn.disabled=false;}
+            } catch(e){st.innerText='Error';} finally{btn.disabled=false;}
         }
     </script>
 </body>
