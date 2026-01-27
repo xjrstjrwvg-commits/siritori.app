@@ -3,118 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>極・しりとり検索 2026</title>
+    <title>極・しりとり 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        input, select, button { font-size: 16px !important; touch-action: manipulation; }
-        .tab-active { background-color: #4f46e5; color: white; }
-    </style>
 </head>
-<body class="bg-slate-100 text-slate-900 pb-20">
-    <div class="max-w-md mx-auto px-4 pt-6">
-        <div class="bg-white rounded-3xl shadow-xl p-6 space-y-4 border border-white">
-            <h1 class="font-black text-indigo-600 italic tracking-tight">SHIRITORI ENGINE v2026</h1>
+<body class="bg-slate-100 text-slate-900 pb-20 font-sans">
+    <div class="max-w-md mx-auto px-4 pt-6 space-y-4">
+        <div class="bg-white rounded-3xl shadow-xl p-6 space-y-4">
+            <h1 class="font-black text-indigo-600 text-center text-xl italic tracking-tighter">SHIRITORI ENGINE v2026</h1>
             
-            <input id="startWord" oninput="toKatakana(this)" placeholder="開始単語" class="w-full p-4 bg-slate-50 rounded-2xl outline-none ring-1 ring-slate-100">
+            <input id="startWord" oninput="toKatakana(this)" placeholder="開始単語" class="w-full p-4 bg-slate-50 rounded-2xl ring-1 ring-slate-100 outline-none focus:ring-2 focus:ring-indigo-500">
             
             <div class="grid grid-cols-2 gap-3">
-                <div class="bg-slate-50 p-4 rounded-2xl ring-1 ring-slate-100">
-                    <label class="text-[10px] font-black text-slate-400 uppercase">ずらし量</label>
-                    <div class="flex items-center justify-between mt-1">
-                        <button onclick="adjShift(-1)" class="font-bold text-indigo-600">-</button>
-                        <span id="shiftDisp" class="font-black">+1</span>
-                        <button onclick="adjShift(1)" class="font-bold text-indigo-600">+</button>
-                    </div>
-                </div>
-                <div class="bg-slate-50 p-4 rounded-2xl ring-1 ring-slate-100 flex flex-col items-center">
-                    <label class="text-[10px] font-black text-slate-400 uppercase">牛耕(往復)</label>
-                    <input type="checkbox" id="gyukou" class="w-6 h-6 mt-1 accent-indigo-600">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-slate-50 p-4 rounded-2xl ring-1 ring-slate-100">
-                    <span class="text-[10px] font-black text-slate-400 uppercase">ルート長</span>
-                    <div class="flex items-center justify-between mt-1">
-                        <button onclick="adjLen(-1)" class="font-bold">-</button>
+                <div class="bg-slate-50 p-4 rounded-2xl ring-1 ring-slate-100 flex justify-between items-center">
+                    <span class="text-[10px] font-bold text-slate-400">長さ</span>
+                    <div class="flex items-center gap-3">
+                        <button onclick="adjLen(-1)" class="w-6 h-6 bg-white rounded-full shadow text-indigo-600 font-bold">-</button>
                         <span id="lenDisp" class="font-black">5</span>
-                        <button onclick="adjLen(1)" class="font-bold">+</button>
+                        <button onclick="adjLen(1)" class="w-6 h-6 bg-white rounded-full shadow text-indigo-600 font-bold">+</button>
                     </div>
                 </div>
-                <div class="bg-slate-50 p-4 rounded-2xl ring-1 ring-slate-100 flex flex-col">
-                    <span class="text-[10px] font-black text-slate-400 uppercase">ソート</span>
-                    <select id="sortType" class="bg-transparent font-bold text-sm mt-1">
-                        <option value="default">標準</option>
+                <div class="bg-slate-50 p-4 rounded-2xl ring-1 ring-slate-100">
+                    <select id="sortType" class="w-full bg-transparent font-bold text-xs mt-1 outline-none">
+                        <option value="default">標準順</option>
                         <option value="length_desc">文字数(多)</option>
-                        <option value="shuffle">ランダム</option>
                     </select>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <label class="flex justify-between items-center text-[10px] font-bold">
-                    <span>濁点無視</span>
-                    <input type="checkbox" id="voice" class="w-5 h-5 accent-indigo-600">
-                </label>
-                <label class="flex justify-between items-center text-[10px] font-bold">
-                    <span>共役・重複排除</span>
-                    <input type="checkbox" id="excludeConjugate" class="w-5 h-5 accent-orange-600">
-                </label>
+            <div class="grid grid-cols-2 gap-4 px-2">
+                <label class="flex justify-between items-center text-[10px] font-bold"><span>濁点無視</span><input type="checkbox" id="voice" class="w-5 h-5 accent-indigo-600"></label>
+                <label class="flex justify-between items-center text-[10px] font-bold text-orange-600"><span>重複一括排除</span><input type="checkbox" id="excludeConjugate" class="w-5 h-5 accent-orange-600"></label>
             </div>
 
-            <button onclick="openModal()" class="w-full py-2 text-[10px] font-bold text-indigo-500 bg-indigo-50 rounded-xl">単語詳細・プリセット</button>
-            <button onclick="run()" id="runBtn" class="w-full bg-indigo-600 text-white font-black py-5 rounded-2xl shadow-lg active:scale-95 transition-all text-lg">探索開始</button>
+            <button onclick="openModal()" class="w-full py-2 text-[10px] font-bold text-indigo-500 bg-indigo-50 rounded-xl">単語詳細設定</button>
+            <button onclick="run()" id="runBtn" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition-all">探索開始</button>
         </div>
-        <div id="results" class="mt-4 space-y-3"></div>
+
+        <div id="statusArea" class="hidden flex justify-between items-center px-2">
+            <span id="hitCount" class="text-sm font-black text-slate-600">0件ヒット</span>
+            <button onclick="copyAll()" class="text-[10px] font-bold text-indigo-600 bg-white px-4 py-2 rounded-full shadow-sm ring-1 ring-indigo-50 active:bg-slate-50">全文コピー</button>
+        </div>
+
+        <div id="results" class="space-y-3"></div>
     </div>
 
-    <!-- モーダル省略(以前の構造と同じ) -->
+    <!-- Modal -->
     <div id="modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-h-[80vh] rounded-3xl p-6 overflow-y-auto">
-            <button onclick="closeModal()" class="float-right font-bold">✕</button>
-            <h2 class="font-bold mb-4">単語設定</h2>
-            {% for w in all_words %}
-            <div class="flex justify-between py-2 border-b text-sm">
-                <span>{{ w }}</span>
-                <select onchange="wordConfigs['{{ w }}'] = parseInt(this.value)">
-                    <option value="0">可</option><option value="1">必須</option><option value="2">不可</option>
-                </select>
+        <div class="bg-white w-full max-h-[80vh] rounded-3xl p-6 flex flex-col overflow-hidden">
+            <div class="flex justify-between items-center mb-4"><span class="font-bold">単語設定</span><button onclick="closeModal()" class="text-xl">✕</button></div>
+            <div class="overflow-y-auto space-y-1">
+                {% for w in all_words %}
+                <div class="flex justify-between items-center py-2 border-b text-xs">
+                    <span>{{ w }}</span>
+                    <select id="cfg-{{ w }}" onchange="wordConfigs['{{ w }}'] = parseInt(this.value)" class="p-1 bg-slate-100 rounded">
+                        <option value="0">可</option><option value="1">必須</option><option value="2">不可</option>
+                    </select>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
     </div>
 
     <script>
-        let length = 5, shift = 1, wordConfigs = {}, category = 'both';
+        let length = 5, wordConfigs = {};
         function toKatakana(el) { el.value = el.value.replace(/[ぁ-ん]/g, s => String.fromCharCode(s.charCodeAt(0) + 0x60)); }
         function adjLen(v) { length = Math.max(2, Math.min(12, length + v)); document.getElementById('lenDisp').innerText = length; }
-        function adjShift(v) { shift += v; document.getElementById('shiftDisp').innerText = (shift >= 0 ? "+" : "") + shift; }
         function openModal() { document.getElementById('modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
         async function run() {
             const btn = document.getElementById('runBtn'); btn.disabled = true;
+            document.getElementById('statusArea').classList.remove('hidden');
+            document.getElementById('hitCount').innerText = "探索中...";
+            
             const res = await fetch('/search', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     start_word: document.getElementById('startWord').value,
-                    shift_count: shift,
-                    is_gyukou: document.getElementById('gyukou').checked,
+                    max_len: length,
                     ignore_voiced: document.getElementById('voice').checked,
                     exclude_conjugate: document.getElementById('excludeConjugate').checked,
-                    max_len: length,
+                    sort_type: document.getElementById('sortType').value,
                     word_configs: wordConfigs,
-                    sort_type: document.getElementById('sortType').value
+                    shift_count: 1
                 })
             });
             const data = await res.json();
             btn.disabled = false;
+            document.getElementById('hitCount').innerText = `${data.count}件ヒット`;
             document.getElementById('results').innerHTML = data.routes.map(r => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <div class="font-bold text-indigo-900">${r.join(' → ')}</div>
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
+                    <div class="route-text font-bold text-indigo-900 mb-3 leading-relaxed">${r.join(' → ')}</div>
+                    <div class="flex justify-end border-t pt-3">
+                        <button onclick="copyOne('${r.join(' → ')}')" class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-4 py-2 rounded-lg active:bg-indigo-100">1行コピー</button>
+                    </div>
                 </div>
             `).join('');
+        }
+
+        function copyOne(t) { navigator.clipboard.writeText(t); alert("1行コピーしました"); }
+        function copyAll() {
+            const t = Array.from(document.querySelectorAll('.route-text')).map(el => el.innerText).join('\n');
+            navigator.clipboard.writeText(t); alert("全てコピーしました");
         }
     </script>
 </body>
