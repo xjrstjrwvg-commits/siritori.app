@@ -5,16 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>国名しりとり探索器</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .result-card { animation: slideIn 0.2s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 p-4">
     <div class="max-w-md mx-auto space-y-6">
         <header class="text-center py-4">
             <h1 class="text-2xl font-black text-indigo-600 tracking-tight">国名しりとり探索</h1>
-            <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Limited Edition</p>
+            <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Lite Edition</p>
         </header>
 
         <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
@@ -23,20 +19,24 @@
                 <input id="sw" placeholder="例: アイスランド" class="w-full p-4 bg-slate-50 rounded-2xl outline-none ring-1 ring-slate-100 focus:ring-indigo-300 transition-all">
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-3 gap-2">
                 <div class="space-y-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">First Char</label>
-                    <input id="sc" placeholder="開始字" class="w-full p-4 bg-slate-50 rounded-2xl text-center outline-none ring-1 ring-slate-100 focus:ring-indigo-300">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Start</label>
+                    <input id="sc" placeholder="始" class="w-full p-4 bg-slate-50 rounded-2xl text-center outline-none ring-1 ring-slate-100 focus:ring-indigo-300">
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Must Char</label>
-                    <input id="mc" placeholder="必須字" class="w-full p-4 bg-slate-50 rounded-2xl text-center outline-none ring-1 ring-slate-100 focus:ring-indigo-300">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Must</label>
+                    <input id="mc" placeholder="必" class="w-full p-4 bg-slate-50 rounded-2xl text-center outline-none ring-1 ring-slate-100 focus:ring-indigo-300">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">End</label>
+                    <input id="ec" placeholder="終" class="w-full p-4 bg-slate-50 rounded-2xl text-center outline-none ring-1 ring-slate-100 focus:ring-indigo-300">
                 </div>
             </div>
 
             <div class="py-2">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase">Route Length: <span id="lDisp" class="text-indigo-600 text-sm">5</span></span>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">Length: <span id="lDisp" class="text-indigo-600 text-sm">5</span></span>
                 </div>
                 <input type="range" id="lenRange" min="2" max="8" value="5" oninput="document.getElementById('lDisp').innerText=this.value" class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600">
             </div>
@@ -52,7 +52,7 @@
                 </label>
             </div>
 
-            <button onclick="run()" id="btn" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition-all mt-2">探索を実行する</button>
+            <button onclick="run()" id="btn" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition-all mt-2">探索を実行</button>
         </div>
 
         <div id="res" class="space-y-3 pb-10"></div>
@@ -65,34 +65,22 @@
             btn.disabled=true; btn.innerText="探索中...";
             resDiv.innerHTML="";
 
-            try {
-                const r=await fetch('/search',{
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({
-                        start_word:document.getElementById('sw').value,
-                        start_char:document.getElementById('sc').value,
-                        must_char:document.getElementById('mc').value,
-                        ignore_voiced:document.getElementById('vo').checked,
-                        limit_one:document.getElementById('lo').checked,
-                        max_len:document.getElementById('lenRange').value
-                    })
-                });
-                const d=await r.json();
-                if(d.count === 0){
-                    resDiv.innerHTML = '<div class="text-center p-10 text-slate-400 text-sm font-bold">見つかりませんでした</div>';
-                } else {
-                    resDiv.innerHTML = d.routes.map(rt=>`
-                        <div class="result-card bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                            <div class="text-sm font-bold text-indigo-900 leading-relaxed">${rt.join(' → ')}</div>
-                        </div>
-                    `).join('');
-                }
-            } catch(e) {
-                alert("エラーが発生しました");
-            } finally {
-                btn.disabled=false; btn.innerText="探索を実行する";
-            }
+            const r=await fetch('/search',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({
+                    start_word:document.getElementById('sw').value,
+                    start_char:document.getElementById('sc').value,
+                    must_char:document.getElementById('mc').value,
+                    end_char:document.getElementById('ec').value,
+                    ignore_voiced:document.getElementById('vo').checked,
+                    limit_one:document.getElementById('lo').checked,
+                    max_len:document.getElementById('lenRange').value
+                })
+            });
+            const d=await r.json();
+            btn.disabled=false; btn.innerText="探索を実行";
+            resDiv.innerHTML = d.count ? d.routes.map(rt=>`<div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-sm font-bold text-indigo-900">${rt.join(' → ')}</div>`).join('') : '<p class="text-center text-slate-400">なし</p>';
         }
     </script>
 </body>
